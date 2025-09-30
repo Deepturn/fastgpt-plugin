@@ -1,18 +1,21 @@
 import express from 'express';
 import { initOpenAPI } from './contract/openapi';
 import { initRouter } from './router';
-import { initTool } from '@tool/init';
+import { initTools } from '@tool/init';
 import { addLog } from './utils/log';
 import { isProd } from './constants';
-import { initS3Server } from './s3/config';
 import { connectSignoz } from './utils/signoz';
 import { initModels } from '@model/init';
 import { setupProxy } from './utils/setupProxy';
 import { initWorkflowTemplates } from '@workflow/init';
+import { connectMongo, connectionMongo, MONGO_URL } from '@/mongo';
+import { refreshVersionKey } from './cache';
+import { SystemCacheKeyEnum } from './cache/type';
 
+const requestSizeLimit = '10mb';
 const app = express().use(
-  express.json(),
-  express.urlencoded({ extended: true }),
+  express.json({ limit: requestSizeLimit }),
+  express.urlencoded({ extended: true, limit: requestSizeLimit }),
   express.static('public', { maxAge: isProd ? '1d' : '0', etag: true, lastModified: true })
 );
 
@@ -25,14 +28,15 @@ setupProxy();
 
 // DB
 try {
-  await initS3Server();
+  await connectMongo(connectionMongo, MONGO_URL);
 } catch (error) {
-  addLog.error('Failed to initialize S3 server:', error);
+  addLog.error('Failed to initialize services:', error);
   process.exit(1);
 }
 
 // Modules
-await Promise.all([initTool(), initModels(), initWorkflowTemplates()]);
+await Promise.all([initTools(), initModels(), initWorkflowTemplates()]);
+await refreshVersionKey(SystemCacheKeyEnum.systemTool);
 
 const PORT = parseInt(process.env.PORT || '3000');
 const server = app.listen(PORT, (error?: Error) => {

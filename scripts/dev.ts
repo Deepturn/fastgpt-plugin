@@ -1,9 +1,8 @@
 import { isProd } from '@/constants';
 import { copyIcons } from 'modules/tool/utils/icon';
 import path from 'path';
-import { watch } from 'fs/promises';
-import { $ } from 'bun';
-import { addLog } from '@/utils/log';
+import { DevServer } from './devServer';
+import fs from 'fs/promises';
 
 async function copyDevIcons() {
   if (isProd) return;
@@ -27,20 +26,34 @@ async function copyDevIcons() {
     })
   ]);
 }
-await copyDevIcons();
 
-// watch the worker.ts change and build it
-const workerPath = path.join(__dirname, '..', 'src', 'worker', 'worker.ts');
-const watcher = watch(workerPath);
+async function checkToolDir() {
+  const toolsDir = path.join(__dirname, '..', 'modules', 'tool', 'packages');
 
-(async () => {
-  for await (const _ of watcher) {
-    addLog.debug(`Worker file changed, rebuilding...`);
-    await $`bun run build:worker`;
+  try {
+    const entries = await fs.readdir(toolsDir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+
+      const dirPath = path.join(toolsDir, entry.name);
+      const indexPath = path.join(dirPath, 'index.ts');
+
+      try {
+        await fs.access(indexPath);
+      } catch {
+        // index.ts doesn't exist, remove the directory
+        await fs.rm(dirPath, { recursive: true, force: true });
+        console.log(`Removed tool directory without index.ts: ${entry.name}`);
+      }
+    }
+  } catch (error) {
+    console.error('Error checking tool directories:', error);
   }
-})();
+}
 
-// build the worker
-await $`bun run build:worker`;
-// run the main server
-await $`bun run --hot src/index.ts`;
+await copyDevIcons();
+await checkToolDir();
+
+const server = new DevServer();
+await server.start();

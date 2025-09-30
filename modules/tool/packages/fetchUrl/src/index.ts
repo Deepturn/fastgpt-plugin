@@ -2,12 +2,19 @@ import { isIPv6 } from 'net';
 import { z } from 'zod';
 import * as cheerio from 'cheerio';
 import axios from 'axios';
-import { getErrText } from '@tool/utils/err';
 import TurndownService from 'turndown';
+import { serviceRequestMaxContentLength } from '@tool/constants';
+
 // @ts-ignore
 const turndownPluginGfm = require('joplin-turndown-plugin-gfm');
 
+// Update content size limits
+const MAX_TEXT_LENGTH = 100 * 1000; // 100k characters limit
+
 export const html2md = (html: string) => {
+  if (html.length > MAX_TEXT_LENGTH) {
+    html = html.slice(0, MAX_TEXT_LENGTH);
+  }
   const turndownService = new TurndownService({
     headingStyle: 'atx',
     bulletListMarker: '-',
@@ -25,27 +32,15 @@ export const html2md = (html: string) => {
 
   const md = turndownService.turndown(html);
 
-  const formatMd = md
-    // Remove line breaks within link alt text: [alt text with\nline breaks](url)
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, (match) => {
-      const altMatch = match.match(/\[([^\]]*)\]/);
-      const urlMatch = match.match(/\(([^)]*)\)/);
-      if (altMatch && urlMatch) {
-        const cleanAltText = altMatch[1].replace(/\n+/g, ' ').trim();
-        return `[${cleanAltText}]${urlMatch[0]}`;
-      }
-      return match;
-    })
-    // Remove line breaks within image alt text: ![alt text with\nline breaks](url)
-    .replace(/!\[([^\]]*)\]\([^)]*\)/g, (match) => {
-      const altMatch = match.match(/\[([^\]]*)\]/);
-      const urlMatch = match.match(/\(([^)]*)\)/);
-      if (altMatch && urlMatch) {
-        const cleanAltText = altMatch[1].replace(/\n+/g, ' ').trim();
-        return `![${cleanAltText}]${urlMatch[0]}`;
-      }
-      return match;
-    });
+  const formatMd = md.replace(
+    /(!\[([^\]]*)\]|\[([^\]]*)\])(\([^)]*\))/g,
+    (match, prefix, imageAlt, linkAlt, url) => {
+      const altText = imageAlt !== undefined ? imageAlt : linkAlt;
+      const cleanAltText = altText.replace(/\n+/g, ' ').trim();
+
+      return imageAlt !== undefined ? `![${cleanAltText}]${url}` : `[${cleanAltText}]${url}`;
+    }
+  );
 
   return formatMd;
 };
@@ -192,47 +187,39 @@ export const urlsFetch = async ({
   url: string;
   selector?: string;
 }): Promise<{
-  url: string;
   title: string;
   content: string;
-  selector?: string;
 }> => {
   const isInternal = isInternalAddress(url);
   if (isInternal) {
     return {
-      url,
       title: '',
-      content: 'Cannot fetch internal url',
-      selector: ''
+      content: 'Cannot fetch internal url'
     };
   }
 
-  try {
-    const fetchRes = await axios.get(url, {
-      timeout: 30000
-    });
+  const fetchRes = await axios.get(url, {
+    timeout: 30000,
+    maxContentLength: serviceRequestMaxContentLength,
+    maxBodyLength: serviceRequestMaxContentLength,
+    responseType: 'text'
+  });
 
-    const $ = cheerio.load(fetchRes.data);
-    const { title, html, usedSelector } = cheerioToHtml({
-      fetchUrl: url,
-      $,
-      selector
-    });
-
-    return {
-      url,
-      title,
-      content: html2md(html),
-      selector: usedSelector
-    };
-  } catch (error) {
-    return {
-      url,
-      title: '',
-      content: getErrText(error),
-      selector: ''
-    };
+  if (fetchRes.data && fetchRes.data.length > serviceRequestMaxContentLength) {
+    return Promise.reject(`Content size exceeds ${serviceRequestMaxContentLength} limit`);
   }
+
+  const $ = cheerio.load(fetchRes.data);
+  const { title, html, usedSelector } = cheerioToHtml({
+    fetchUrl: url,
+    $,
+    selector
+  });
+
+  return {
+    title,
+    content: html2md(html)
+  };
 };
 
 export const InputType = z.object({
@@ -240,16 +227,18 @@ export const InputType = z.object({
 });
 
 export const OutputType = z.object({
+  title: z.string().optional(),
   result: z.string()
 });
 
 export async function tool(props: z.infer<typeof InputType>): Promise<z.infer<typeof OutputType>> {
-  const { content } = await urlsFetch({
+  const { title, content } = await urlsFetch({
     url: props.url,
     selector: 'body'
   });
 
   return {
+    title,
     result: content
   };
 }

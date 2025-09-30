@@ -8,6 +8,24 @@ export interface CopyIconOptions {
   logPrefix?: string;
 }
 
+// Supported image formats for logo files
+export const iconFormats = ['svg', 'png', 'jpeg', 'webp', 'jpg'];
+
+/**
+ * Find logo file with supported formats in the given directory
+ * @param directory Directory to search in
+ * @returns Logo file path if found, null otherwise
+ */
+function findLogoFile(directory: string): string | null {
+  for (const format of iconFormats) {
+    const logoPath = path.join(directory, `logo.${format}`);
+    if (fs.existsSync(logoPath)) {
+      return logoPath;
+    }
+  }
+  return null;
+}
+
 /**
  * Copy logo files from source directory to target directory.
  * @param options CopyIconOptions
@@ -33,12 +51,41 @@ export async function copyIcons(options: CopyIconOptions): Promise<number> {
       continue;
     }
 
-    const logoPath = path.join(itemDir, 'logo.svg');
-    if (fs.existsSync(logoPath)) {
-      const logoTarget = path.join(targetDir, `${item}.svg`);
+    // Find logo file with any supported format
+    const logoPath = findLogoFile(itemDir);
+    if (logoPath) {
+      const logoExtension = path.extname(logoPath);
+      const logoTarget = path.join(targetDir, `${item}${logoExtension}`);
       fs.cpSync(logoPath, logoTarget);
       console.log(`📦 ${logPrefix}: ${path.relative(process.cwd(), logoTarget)}`);
       copiedCount++;
+    }
+
+    // Handle children directory
+    const childrenDir = path.join(itemDir, 'children');
+    if (fs.existsSync(childrenDir) && fs.statSync(childrenDir).isDirectory()) {
+      const childrenTargetDir = path.join(targetDir, item);
+      if (!fs.existsSync(childrenTargetDir)) {
+        fs.mkdirSync(childrenTargetDir, { recursive: true });
+      }
+
+      const children = fs.readdirSync(childrenDir);
+      for (const child of children) {
+        const childDir = path.join(childrenDir, child);
+        if (!fs.existsSync(childDir) || !fs.statSync(childDir).isDirectory()) {
+          continue;
+        }
+
+        // Find child logo file with any supported format
+        const childLogoPath = findLogoFile(childDir);
+        if (childLogoPath) {
+          const childLogoExtension = path.extname(childLogoPath);
+          const childLogoTarget = path.join(childrenTargetDir, `${child}${childLogoExtension}`);
+          fs.cpSync(childLogoPath, childLogoTarget);
+          console.log(`📦 ${logPrefix}: ${path.relative(process.cwd(), childLogoTarget)}`);
+          copiedCount++;
+        }
+      }
     }
   }
 
