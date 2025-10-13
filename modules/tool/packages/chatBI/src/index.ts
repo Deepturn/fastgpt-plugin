@@ -50,7 +50,9 @@ export async function tool(
     const url = new URL('/v2/open/api/common/stream/chatbi/chatNew', chatBIUrl);
 
     // userID get from systemVar
-    const userId = systemVar.user.username.split('-')[1];
+    const userId = systemVar.user.username.includes('-')
+      ? systemVar.user.username.split('-')[1]
+      : systemVar.user.username;
 
     if (!sessionId) {
       sessionId = userId;
@@ -93,7 +95,6 @@ export async function tool(
       if (done) break;
 
       buffer += decoder.decode(value, { stream: true });
-
       const events = buffer.split('\n\n');
 
       buffer = events.pop() || '';
@@ -115,6 +116,10 @@ export async function tool(
         if (eventData && eventData !== '') {
           try {
             const data: DataType = JSON.parse(eventData);
+            if (data.errorMessage) {
+              return Promise.reject(data.errorMessage);
+            }
+            console.log(data);
 
             if (data.displayContentList && data.displayContentList.length > sentListLen) {
               // only send the last items
@@ -131,7 +136,7 @@ export async function tool(
 
               streamResponse({
                 content,
-                type: StreamDataAnswerTypeEnum.answer
+                type: StreamDataAnswerTypeEnum.fastAnswer
               });
               sentListLen = data.displayContentList.length;
             }
@@ -147,7 +152,7 @@ export async function tool(
               isFinished = true;
               break;
             }
-          } catch (e) {
+          } catch {
             continue;
           }
         }
