@@ -101,7 +101,11 @@ export async function tool(
   try {
     const url = new URL('/v2/open/api/onpremise/memo/stream/query', dingdingUrl);
 
-    url.searchParams.append('userId', systemVar.user.username);
+    const userId = systemVar.user.username.includes('-')
+      ? systemVar.user.username.split('-')[1]
+      : systemVar.user.username;
+
+    url.searchParams.append('userId', userId);
     url.searchParams.append('sysAccessKey', sysAccessKey);
     url.searchParams.append('corpId', corpId);
     url.searchParams.append('appId', appId.toString());
