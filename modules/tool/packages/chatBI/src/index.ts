@@ -31,7 +31,7 @@ export const InputType = z.object({
 });
 
 export const OutputType = z.object({
-  // displayContentList: z.array(z.any())
+  displayContentList: z.array(z.any())
 });
 
 export async function tool(
@@ -89,6 +89,7 @@ export async function tool(
     let sentListLen = 0;
     let buffer = '';
     let isFinished = false;
+    const displayContentList = [];
 
     while (!isFinished) {
       const { done, value } = await reader.read();
@@ -119,10 +120,10 @@ export async function tool(
             if (data.errorMessage) {
               return Promise.reject(data.errorMessage);
             }
-            console.log(data);
 
             if (data.displayContentList && data.displayContentList.length > sentListLen) {
               // only send the last items
+              displayContentList.push(...data.displayContentList.slice(sentListLen));
               const sendList = data.displayContentList.slice(sentListLen);
               const texts = sendList
                 .filter((item) => item.type === 'TEXT')
@@ -160,7 +161,7 @@ export async function tool(
     }
 
     return {
-      // displayContentList
+      displayContentList
     };
   } catch (error) {
     return Promise.reject(getErrText(error));
