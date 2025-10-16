@@ -10,6 +10,7 @@ type DataType = {
   processList: unknown[];
   displayContentList: ContentType[];
   streamData: string;
+  traceId: string;
 };
 
 enum ContentTypeEnum {
@@ -31,7 +32,8 @@ export const InputType = z.object({
 });
 
 export const OutputType = z.object({
-  displayContentList: z.array(z.any())
+  displayContentList: z.array(z.any()),
+  traceId: z.string()
 });
 
 export async function tool(
@@ -89,6 +91,7 @@ export async function tool(
     let sentListLen = 0;
     let buffer = '';
     let isFinished = false;
+    let traceId = '';
     const displayContentList = [];
 
     while (!isFinished) {
@@ -117,6 +120,7 @@ export async function tool(
         if (eventData && eventData !== '') {
           try {
             const data: DataType = JSON.parse(eventData);
+            traceId = data.traceId;
             if (data.errorMessage) {
               return Promise.reject(data.errorMessage);
             }
@@ -161,7 +165,8 @@ export async function tool(
     }
 
     return {
-      displayContentList
+      displayContentList,
+      traceId
     };
   } catch (error) {
     return Promise.reject(getErrText(error));

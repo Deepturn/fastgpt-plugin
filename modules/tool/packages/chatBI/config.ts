@@ -81,6 +81,12 @@ export default defineTool({
           key: 'displayContentList',
           label: '展示内容列表',
           description: 'ChatBI返回的核心展示内容，包含文本、图表、表格等多种类型'
+        },
+        {
+          valueType: WorkflowIOValueTypeEnum.string,
+          key: 'traceId',
+          label: 'traceId',
+          description: 'traceId'
         }
       ]
     }
