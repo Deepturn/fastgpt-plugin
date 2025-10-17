@@ -2,6 +2,7 @@ import { defineTool } from '@tool/type';
 import { FlowNodeInputTypeEnum, WorkflowIOValueTypeEnum } from '@tool/type/fastgpt';
 
 export default defineTool({
+  isWorkerRun: false,
   name: {
     'zh-CN': '每日天气',
     en: 'Daily Weather'
@@ -56,7 +57,7 @@ export default defineTool({
           renderTypeList: [FlowNodeInputTypeEnum.input, FlowNodeInputTypeEnum.reference],
           valueType: WorkflowIOValueTypeEnum.string,
           description: '结束日期，格式：YYYY-MM-DD，如：2024-07-20',
-          placeholder: '格式：YYYY-MM-DD，如：2024-07-20',
+          placeholder: '格式：YYYY-MM-DD，如：2024-07-20，最多获取未来15天的天气数据',
           toolDescription: '结束日期'
         }
       ],

@@ -84,6 +84,7 @@ export const InputConfigSchema = z.object({
   description: z.string().optional(),
   required: z.boolean().optional(),
   inputType: z.enum(['input', 'numberInput', 'secret', 'switch', 'select']),
+  defaultValue: z.any().optional(),
 
   // select
   list: z
@@ -145,11 +146,11 @@ export const InputSchema = z.object({
     )
     .optional(),
   // Number input/ Slider
-  step: z.number().optional(),
+  step: z.number().optional().describe('Number input step value'),
   // number input
-  max: z.number().optional(),
-  min: z.number().optional(),
-  precision: z.number().optional()
+  max: z.number().optional().describe('Number input max value'),
+  min: z.number().optional().describe('Number input min value'),
+  precision: z.number().optional().describe('Number input precision value')
 });
 export type InputType = z.infer<typeof InputSchema>;
 
