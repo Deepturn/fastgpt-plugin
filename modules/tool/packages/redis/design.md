@@ -505,13 +505,13 @@ export default exportTool({
   },
   "dependencies": {
     "ioredis": "^5.3.2",
-    "zod": "^3.24.3"
+    "zod": "^3.25.76"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "devDependencies": {
-    "@types/bun": "^1.2.2"
+    "@types/bun": "latest"
   }
 }
 ```

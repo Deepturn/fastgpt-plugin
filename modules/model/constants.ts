@@ -1,4 +1,4 @@
-import type { I18nStringType } from '@/type/i18n';
+import type { I18nStringStrictType } from '@/type/i18n';
 import type { ListModelsType } from './api/type';
 
 export const modelsBuffer: {
@@ -7,7 +7,11 @@ export const modelsBuffer: {
   data: []
 };
 
-export const ModelProviderMap = {
+export type ModelProviderMap = {
+  [key: string]: I18nStringStrictType;
+};
+
+export const ModelProviderMap: ModelProviderMap = {
   OpenAI: {
     en: 'OpenAI',
     'zh-CN': 'OpenAI',
@@ -68,20 +72,20 @@ export const ModelProviderMap = {
     'zh-CN': 'ChatGLM',
     'zh-Hant': 'ChatGLM'
   },
-  Ernie: {
-    en: 'Ernie',
-    'zh-CN': '文心一言',
-    'zh-Hant': '文心一言'
+  MiniMax: {
+    en: 'MiniMax',
+    'zh-CN': 'MiniMax',
+    'zh-Hant': 'MiniMax'
   },
   Moonshot: {
     en: 'Moonshot',
     'zh-CN': '月之暗面',
     'zh-Hant': '月之暗面'
   },
-  MiniMax: {
-    en: 'MiniMax',
-    'zh-CN': 'MiniMax',
-    'zh-Hant': 'MiniMax'
+  Ernie: {
+    en: 'Ernie',
+    'zh-CN': '文心一言',
+    'zh-Hant': '文心一言'
   },
   SparkDesk: {
     en: 'SparkDesk',
@@ -198,13 +202,11 @@ export const ModelProviders = Object.entries(ModelProviderMap)
     return 0;
   });
 
-export type ModelProviderIdType = keyof typeof ModelProviderMap;
-
 export type AiproxyMapProviderType = Record<
   number,
   {
-    name: I18nStringType | string;
-    provider: ModelProviderIdType; // Use to sort,get avatar
+    name: I18nStringStrictType | string;
+    provider?: string; // Use to sort,get avatar
     avatar?: string;
   }
 >;

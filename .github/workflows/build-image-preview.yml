@@ -17,10 +17,69 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: Checkout code
+      - name: Get PR changed files via API
+        id: pr-files
+        run: |
+          PR_NUMBER=${{ github.event.number }}
+          REPO=${{ github.repository }}
+          TOKEN=${{ secrets.GITHUB_TOKEN }}
+
+          RESPONSE=$(curl -s -H "Authorization: token $TOKEN" \
+            "https://api.github.com/repos/$REPO/pulls/$PR_NUMBER/files")
+
+          FILES=$(echo "$RESPONSE" | jq -r '.[].filename')
+
+          echo "All changed files:"
+          echo "$FILES"
+
+          PACKAGE_CHANGES=""
+
+          # Extract package names from changed files
+          for file in $FILES; do
+            if [[ "$file" == modules/tool/packages/* ]]; then
+              echo "Found package file: $file"
+
+              # Extract package directory name
+              PACKAGE_NAME=$(echo "$file" | cut -d'/' -f4)
+              echo "Found package directory: $PACKAGE_NAME"
+
+              # Add to package changes if not already present
+              if [[ ! " $PACKAGE_CHANGES " =~ " $PACKAGE_NAME " ]]; then
+                if [ -z "$PACKAGE_CHANGES" ]; then
+                  PACKAGE_CHANGES="$PACKAGE_NAME"
+                else
+                  PACKAGE_CHANGES="$PACKAGE_CHANGES $PACKAGE_NAME"
+                fi
+              fi
+            fi
+          done
+
+          echo "Package changes detected: $PACKAGE_CHANGES"
+          echo "package_changes=$PACKAGE_CHANGES" >> $GITHUB_OUTPUT
+
+      - name: Set sparse checkout environment variable
+        run: |
+          echo "SPARSE_CHECKOUT_CONFIG<<EOF" >> $GITHUB_ENV
+          echo "/*" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: ${{ env.SPARSE_CHECKOUT_CONFIG }}
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.23
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile && bun run install:plugins
+
+      - name: Build pkg
+        run: bun run build:pkg
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -32,8 +91,7 @@ jobs:
           username: ${{ secrets.ALI_HUB_USERNAME }}
           password: ${{ secrets.ALI_HUB_PASSWORD }}
 
-      - name: Build and push for amd64
-        id: build
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -47,17 +105,45 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
-      - name: '@finleyge/github-tools'
-        uses: FinleyGe/github-tools@0.0.1
-        id: print-image-label
+      - name: Add PR comment on success
         if: success()
+        uses: actions/github-script@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tool: issue-comment
-          title: Preview Image Label
-          body: |
-            Preview Images for this PR are:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
 
-            ```
+            const existingComment = comments.find(comment =>
+              comment.body.includes('Preview Images for this PR') &&
+              comment.user.type === 'Bot'
+            );
+
+            const commentBody = `
+            ✅ **Build Successful** - Preview Images for this PR:
+
+            \`\`\`
             ${{ secrets.ALI_IMAGE_NAME }}/fastgpt-plugin-pr:${{ github.event.pull_request.head.sha }}
-            ```
+            \`\`\`
+
+            **Changed packages:**
+            ${{ steps.pr-files.outputs.package_changes || 'None' }}
+            `;
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: commentBody
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
+              });
+            }

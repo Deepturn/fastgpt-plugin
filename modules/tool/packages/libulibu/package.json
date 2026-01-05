@@ -6,12 +6,12 @@
     "build": "bun build index.ts --minify --outdir dist --outFile index.js --target=node"
   },
   "devDependencies": {
-    "@types/bun": "^1.2.2"
+    "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "zod": "^3.24.3"
+    "zod": "^3.25.76"
   }
 }

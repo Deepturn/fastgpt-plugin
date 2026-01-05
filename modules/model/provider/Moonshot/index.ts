@@ -5,7 +5,7 @@ const models: ProviderConfigType = {
   list: [
     {
       type: ModelTypeEnum.llm,
-      model: 'kimi-k2-turbo-preview',
+      model: 'kimi-k2-thinking',
       maxContext: 256000,
       maxTokens: 32000,
       quoteMaxToken: 250000,
@@ -13,6 +13,30 @@ const models: ProviderConfigType = {
       responseFormatList: ['text', 'json_object'],
       vision: false,
       reasoning: false,
+      toolChoice: true
+    },
+    {
+      type: ModelTypeEnum.llm,
+      model: 'kimi-k2-thinking-turbo',
+      maxContext: 256000,
+      maxTokens: 32000,
+      quoteMaxToken: 250000,
+      maxTemperature: 1,
+      responseFormatList: ['text', 'json_object'],
+      vision: false,
+      reasoning: true,
+      toolChoice: true
+    },
+    {
+      type: ModelTypeEnum.llm,
+      model: 'kimi-k2-turbo-preview',
+      maxContext: 256000,
+      maxTokens: 32000,
+      quoteMaxToken: 250000,
+      maxTemperature: 1,
+      responseFormatList: ['text', 'json_object'],
+      vision: false,
+      reasoning: true,
       toolChoice: true
     },
     {

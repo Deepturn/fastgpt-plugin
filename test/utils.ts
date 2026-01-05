@@ -1,5 +1,5 @@
-import { SystemVarSchema } from '@tool/type/tool';
-import z from 'zod';
+import { SystemVarSchema } from '@tool/type/req';
+import { z } from 'zod';
 
 export const getMockSystemVar = (
   systemVar: z.infer<typeof SystemVarSchema>
