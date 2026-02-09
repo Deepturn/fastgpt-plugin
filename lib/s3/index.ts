@@ -9,7 +9,7 @@ import {
   type IStorage,
   type IStorageOptions
 } from '@fastgpt-sdk/storage';
-import { addLog } from '@/utils/log';
+import { getLogger, infra } from '@/logger';
 
 type StorageConfigWithoutBucket = Omit<IStorageOptions, 'bucket'>;
 
@@ -31,9 +31,10 @@ const getConfig = () => {
       region,
       vendor,
       credentials,
-      forcePathStyle: vendor === 'minio' ? true : options.forcePathStyle,
       endpoint: options.endpoint!,
-      maxRetries: options.maxRetries!
+      maxRetries: options.maxRetries!,
+      forcePathStyle: options.forcePathStyle,
+      publicAccessExtraSubPath: options.publicAccessExtraSubPath
     };
 
     return buildResult(config, { ...config, endpoint: externalBaseUrl });
@@ -90,37 +91,90 @@ const createS3Service = async (bucket: string, isPublic: boolean) => {
   try {
     await client.ensureBucket();
     if (isPublic) await ensurePublicPolicy(client);
-  } catch (error) {
-    addLog.info(`Failed to ensure bucket "${bucket}" exists:`, { error });
-  }
 
-  try {
     await externalClient?.ensureBucket();
     if (isPublic && externalClient) await ensurePublicPolicy(externalClient);
   } catch (error) {
-    addLog.info(`Failed to ensure bucket "${bucket}" exists:`, { error });
+    const logger = getLogger(infra.storage);
+    logger.warn(`Ensure bucket warn: ${JSON.stringify(error, null, 2)}`, { error });
   }
 
   return new S3Service(client, externalClient);
 };
 
-export const publicS3Server = await (async () => {
-  if (!global._publicS3Server) {
-    const { publicBucket } = getConfig();
-    global._publicS3Server = await createS3Service(publicBucket, true);
-  }
-  return global._publicS3Server;
-})();
+const s3ServiceInstances: {
+  publicS3Server: S3Service | null;
+  privateS3Server: S3Service | null;
+} = {
+  publicS3Server: null,
+  privateS3Server: null
+};
 
-export const privateS3Server = await (async () => {
-  if (!global._privateS3Server) {
-    const { privateBucket } = getConfig();
-    global._privateS3Server = await createS3Service(privateBucket, false);
-  }
-  return global._privateS3Server;
-})();
+let initPromise: Promise<void> | null = null;
 
-declare global {
-  var _publicS3Server: S3Service;
-  var _privateS3Server: S3Service;
-}
+export const initS3Service = async () => {
+  if (initPromise) return initPromise;
+  const logger = getLogger(infra.storage);
+  logger.info('Initializing S3 service...');
+  const doInit = async () => {
+    const { publicBucket, privateBucket } = getConfig();
+    try {
+      if (!s3ServiceInstances.publicS3Server) {
+        logger.debug('Initializing public S3 service...');
+        s3ServiceInstances.publicS3Server = await createS3Service(publicBucket, true);
+      }
+      if (!s3ServiceInstances.privateS3Server) {
+        logger.debug('Initializing private S3 service...');
+        s3ServiceInstances.privateS3Server = await createS3Service(privateBucket, false);
+      }
+    } catch (error) {
+      logger.error(`Failed to initialize S3 service: ${JSON.stringify(error, null, 2)}`, {
+        error
+      });
+      throw error;
+    }
+  };
+  initPromise = doInit();
+  return initPromise;
+};
+
+export const getPublicS3Server = (): S3Service => {
+  if (!s3ServiceInstances.publicS3Server) {
+    throw new Error('Public S3 service not initialized. Call initS3Service() first.');
+  }
+  return s3ServiceInstances.publicS3Server;
+};
+
+export const getPrivateS3Server = (): S3Service => {
+  if (!s3ServiceInstances.privateS3Server) {
+    throw new Error('Private S3 service not initialized. Call initS3Service() first.');
+  }
+  return s3ServiceInstances.privateS3Server;
+};
+
+export const getPublicS3ServerAsync = async (): Promise<S3Service> => {
+  if (!s3ServiceInstances.publicS3Server) {
+    await initS3Service();
+  }
+  return getPublicS3Server();
+};
+
+export const getPrivateS3ServerAsync = async (): Promise<S3Service> => {
+  if (!s3ServiceInstances.privateS3Server) {
+    await initS3Service();
+  }
+  return getPrivateS3Server();
+};
+
+// 为了向后兼容，保留旧的导出方式（但使用 getter）
+export const publicS3Server = new Proxy({} as S3Service, {
+  get(_, prop) {
+    return getPublicS3Server()[prop as keyof S3Service];
+  }
+});
+
+export const privateS3Server = new Proxy({} as S3Service, {
+  get(_, prop) {
+    return getPrivateS3Server()[prop as keyof S3Service];
+  }
+});
