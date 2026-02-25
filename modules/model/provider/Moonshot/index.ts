@@ -5,6 +5,24 @@ const models: ProviderConfigType = {
   list: [
     {
       type: ModelTypeEnum.llm,
+      model: 'kimi-k2.5',
+      maxContext: 256000,
+      maxTokens: 32000,
+      quoteMaxToken: 250000,
+      maxTemperature: null,
+      responseFormatList: ['text', 'json_object'],
+      vision: false,
+      reasoning: true,
+      toolChoice: true,
+      showTopP: false,
+      defaultConfig: {
+        thinking: {
+          type: 'enabled'
+        }
+      }
+    },
+    {
+      type: ModelTypeEnum.llm,
       model: 'kimi-k2-thinking',
       maxContext: 256000,
       maxTokens: 32000,
