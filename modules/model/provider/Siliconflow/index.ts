@@ -12,6 +12,7 @@ const models: ProviderConfigType = {
       maxTemperature: 1,
       vision: false,
       reasoning: false,
+      reasoningEffort: false,
       toolChoice: true
     },
     {
@@ -24,6 +25,7 @@ const models: ProviderConfigType = {
       censor: false,
       vision: true,
       reasoning: false,
+      reasoningEffort: false,
       toolChoice: false,
       datasetProcess: false,
       usedInClassify: false,
@@ -39,6 +41,7 @@ const models: ProviderConfigType = {
       maxTemperature: 1,
       vision: true,
       reasoning: false,
+      reasoningEffort: false,
       toolChoice: true
     },
     {
@@ -95,7 +98,8 @@ const models: ProviderConfigType = {
     },
     {
       type: ModelTypeEnum.rerank,
-      model: 'BAAI/bge-reranker-v2-m3'
+      model: 'BAAI/bge-reranker-v2-m3',
+      maxToken: 8192
     }
   ]
 };

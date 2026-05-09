@@ -5,6 +5,66 @@ const models: ProviderConfigType = {
   list: [
     {
       type: ModelTypeEnum.llm,
+      model: 'step-3.5-flash-2603',
+      maxContext: 64000,
+      maxTokens: 8000,
+      quoteMaxToken: 60000,
+      maxTemperature: 2,
+      vision: false,
+      reasoning: true,
+      reasoningEffort: false,
+      toolChoice: true
+    },
+    {
+      type: ModelTypeEnum.llm,
+      model: 'step-3.5-flash',
+      maxContext: 64000,
+      maxTokens: 8000,
+      quoteMaxToken: 60000,
+      maxTemperature: 2,
+      vision: false,
+      reasoning: true,
+      reasoningEffort: false,
+      toolChoice: true
+    },
+    {
+      type: ModelTypeEnum.llm,
+      model: 'step-3',
+      maxContext: 64000,
+      maxTokens: 8000,
+      quoteMaxToken: 60000,
+      maxTemperature: 2,
+      vision: true,
+      reasoning: true,
+      reasoningEffort: false,
+      toolChoice: true
+    },
+    {
+      type: ModelTypeEnum.llm,
+      model: 'step-r1-v-mini',
+      maxContext: 64000,
+      maxTokens: 8000,
+      quoteMaxToken: 60000,
+      maxTemperature: 2,
+      vision: true,
+      reasoning: true,
+      reasoningEffort: false,
+      toolChoice: true
+    },
+    {
+      type: ModelTypeEnum.llm,
+      model: 'step-1o-turbo-vision',
+      maxContext: 32000,
+      maxTokens: 8000,
+      quoteMaxToken: 32000,
+      maxTemperature: 2,
+      vision: true,
+      reasoning: false,
+      reasoningEffort: false,
+      toolChoice: true
+    },
+    {
+      type: ModelTypeEnum.llm,
       model: 'step-1-flash',
       maxContext: 8000,
       maxTokens: 4000,
@@ -12,6 +72,7 @@ const models: ProviderConfigType = {
       maxTemperature: 2,
       vision: false,
       reasoning: false,
+      reasoningEffort: false,
       toolChoice: false
     },
     {
@@ -23,6 +84,7 @@ const models: ProviderConfigType = {
       maxTemperature: 2,
       vision: false,
       reasoning: false,
+      reasoningEffort: false,
       toolChoice: false
     },
     {
@@ -34,6 +96,7 @@ const models: ProviderConfigType = {
       maxTemperature: 2,
       vision: false,
       reasoning: false,
+      reasoningEffort: false,
       toolChoice: false
     },
     {
@@ -45,6 +108,7 @@ const models: ProviderConfigType = {
       maxTemperature: 2,
       vision: false,
       reasoning: false,
+      reasoningEffort: false,
       toolChoice: false
     },
     {
@@ -56,6 +120,7 @@ const models: ProviderConfigType = {
       maxTemperature: 2,
       vision: false,
       reasoning: false,
+      reasoningEffort: false,
       toolChoice: false
     },
     {
@@ -67,6 +132,7 @@ const models: ProviderConfigType = {
       maxTemperature: 2,
       vision: true,
       reasoning: false,
+      reasoningEffort: false,
       toolChoice: false
     },
     {
@@ -78,6 +144,7 @@ const models: ProviderConfigType = {
       maxTemperature: 2,
       vision: true,
       reasoning: false,
+      reasoningEffort: false,
       toolChoice: false
     },
     {
@@ -89,6 +156,7 @@ const models: ProviderConfigType = {
       maxTemperature: 2,
       vision: true,
       reasoning: false,
+      reasoningEffort: false,
       toolChoice: false
     },
     {
@@ -100,6 +168,7 @@ const models: ProviderConfigType = {
       maxTemperature: 2,
       vision: false,
       reasoning: false,
+      reasoningEffort: false,
       toolChoice: false
     },
     {
@@ -111,17 +180,7 @@ const models: ProviderConfigType = {
       maxTemperature: 2,
       vision: false,
       reasoning: false,
-      toolChoice: false
-    },
-    {
-      type: ModelTypeEnum.llm,
-      model: 'step-2-16k-exp',
-      maxContext: 16000,
-      maxTokens: 4000,
-      quoteMaxToken: 4000,
-      maxTemperature: 2,
-      vision: false,
-      reasoning: false,
+      reasoningEffort: false,
       toolChoice: false
     },
     {

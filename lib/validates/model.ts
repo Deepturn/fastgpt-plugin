@@ -39,6 +39,7 @@ export const LLMModelItemSchema = PriceSchema.merge(BaseModelItemSchema).extend(
   censor: z.boolean().optional(),
   vision: z.boolean(),
   reasoning: z.boolean(),
+  reasoningEffort: z.boolean(),
   toolChoice: z.boolean(),
 
   // diff function model
@@ -68,7 +69,8 @@ export const EmbeddingModelItemSchema = PriceSchema.merge(BaseModelItemSchema).e
 
 // Rerank 模型类型 schema
 export const RerankModelItemSchema = PriceSchema.merge(BaseModelItemSchema).extend({
-  type: z.literal(ModelTypeEnum.rerank)
+  type: z.literal(ModelTypeEnum.rerank),
+  maxToken: z.number()
 });
 
 // TTS 模型类型 schema

@@ -5,13 +5,26 @@ const models: ProviderConfigType = {
   list: [
     {
       type: ModelTypeEnum.llm,
+      model: 'gemini-3.1-pro-preview-customtools',
+      maxContext: 1000000,
+      maxTokens: 64000,
+      quoteMaxToken: 1000000,
+      maxTemperature: 1,
+      vision: true,
+      reasoning: true,
+      reasoningEffort: true,
+      toolChoice: true
+    },
+    {
+      type: ModelTypeEnum.llm,
       model: 'gemini-3.1-flash-lite-preview',
       maxContext: 1000000,
       maxTokens: 64000,
       quoteMaxToken: 1000000,
       maxTemperature: 1,
       vision: true,
-      reasoning: false,
+      reasoning: true,
+      reasoningEffort: true,
       toolChoice: true
     },
     {
@@ -22,7 +35,8 @@ const models: ProviderConfigType = {
       quoteMaxToken: 1000000,
       maxTemperature: 1,
       vision: true,
-      reasoning: false,
+      reasoning: true,
+      reasoningEffort: true,
       toolChoice: true
     },
     {
@@ -33,10 +47,10 @@ const models: ProviderConfigType = {
       quoteMaxToken: 1000000,
       maxTemperature: 1,
       vision: true,
-      reasoning: false,
+      reasoning: true,
+      reasoningEffort: true,
       toolChoice: true
     },
-
     {
       type: ModelTypeEnum.llm,
       model: 'gemini-3-flash-preview',
@@ -45,7 +59,8 @@ const models: ProviderConfigType = {
       quoteMaxToken: 1000000,
       maxTemperature: 1,
       vision: true,
-      reasoning: false,
+      reasoning: true,
+      reasoningEffort: true,
       toolChoice: true
     },
     {
@@ -56,19 +71,8 @@ const models: ProviderConfigType = {
       quoteMaxToken: 1000000,
       maxTemperature: 1,
       vision: true,
-      reasoning: false,
-      toolChoice: true
-    },
-
-    {
-      type: ModelTypeEnum.llm,
-      model: 'gemini-3-pro-preview',
-      maxContext: 1024000,
-      maxTokens: 64000,
-      quoteMaxToken: 1000000,
-      maxTemperature: 1,
-      vision: true,
-      reasoning: false,
+      reasoning: true,
+      reasoningEffort: true,
       toolChoice: true
     },
     {
@@ -80,6 +84,7 @@ const models: ProviderConfigType = {
       maxTemperature: 1,
       vision: true,
       reasoning: false,
+      reasoningEffort: false,
       toolChoice: true
     },
     {
@@ -91,6 +96,7 @@ const models: ProviderConfigType = {
       maxTemperature: 1,
       vision: true,
       reasoning: false,
+      reasoningEffort: false,
       toolChoice: true
     },
     {
@@ -102,28 +108,7 @@ const models: ProviderConfigType = {
       maxTemperature: 1,
       vision: true,
       reasoning: false,
-      toolChoice: true
-    },
-    {
-      type: ModelTypeEnum.llm,
-      model: 'gemini-2.5-pro-exp-03-25',
-      maxContext: 1000000,
-      maxTokens: 63000,
-      quoteMaxToken: 1000000,
-      maxTemperature: 1,
-      vision: true,
-      reasoning: false,
-      toolChoice: true
-    },
-    {
-      type: ModelTypeEnum.llm,
-      model: 'gemini-2.5-flash-preview-04-17',
-      maxContext: 1000000,
-      maxTokens: 8000,
-      quoteMaxToken: 60000,
-      maxTemperature: 1,
-      vision: true,
-      reasoning: false,
+      reasoningEffort: false,
       toolChoice: true
     },
     {
@@ -135,17 +120,7 @@ const models: ProviderConfigType = {
       maxTemperature: 1,
       vision: true,
       reasoning: false,
-      toolChoice: true
-    },
-    {
-      type: ModelTypeEnum.llm,
-      model: 'gemini-2.0-pro-exp',
-      maxContext: 2000000,
-      maxTokens: 8000,
-      quoteMaxToken: 100000,
-      maxTemperature: 1,
-      vision: true,
-      reasoning: false,
+      reasoningEffort: false,
       toolChoice: true
     },
     {
@@ -157,6 +132,7 @@ const models: ProviderConfigType = {
       maxTemperature: 1,
       vision: true,
       reasoning: false,
+      reasoningEffort: false,
       toolChoice: true
     },
     {
@@ -168,50 +144,7 @@ const models: ProviderConfigType = {
       maxTemperature: 1,
       vision: true,
       reasoning: false,
-      toolChoice: true
-    },
-    {
-      type: ModelTypeEnum.llm,
-      model: 'gemini-2.0-flash-exp',
-      maxContext: 1000000,
-      maxTokens: 8000,
-      quoteMaxToken: 60000,
-      maxTemperature: 1,
-      vision: true,
-      reasoning: false,
-      toolChoice: true
-    },
-    {
-      type: ModelTypeEnum.llm,
-      model: 'gemini-2.0-flash-thinking-exp-1219',
-      maxContext: 1000000,
-      maxTokens: 8000,
-      quoteMaxToken: 60000,
-      maxTemperature: 1,
-      vision: true,
-      reasoning: true,
-      toolChoice: true
-    },
-    {
-      type: ModelTypeEnum.llm,
-      model: 'gemini-2.0-flash-thinking-exp-01-21',
-      maxContext: 1000000,
-      maxTokens: 8000,
-      quoteMaxToken: 60000,
-      maxTemperature: 1,
-      vision: true,
-      reasoning: true,
-      toolChoice: true
-    },
-    {
-      type: ModelTypeEnum.llm,
-      model: 'gemini-exp-1206',
-      maxContext: 128000,
-      maxTokens: 8000,
-      quoteMaxToken: 120000,
-      maxTemperature: 1,
-      vision: true,
-      reasoning: false,
+      reasoningEffort: false,
       toolChoice: true
     },
     {
